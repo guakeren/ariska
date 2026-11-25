@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ariska Rahmawati</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="langit" aria-hidden="true"></canvas>
+  <div class="bar"><i id="bar"></i></div>
+  <button class="musik" id="musik" aria-label="Putar musik">♪</button>
+  <audio id="lagu" src="musik.mp3" loop></audio>
+
+  <main class="deck">
+
+    <!-- 1. Sampul -->
+    <section class="slide active" id="s1">
+      <div class="teks">
+        <p class="kecil">Untuk seseorang yang paling berarti</p>
+        <h1 data-split>ARISKA</h1>
+        <p class="isi">Aku membuatkan sesuatu. Tidak besar, tapi semuanya dari hati.</p>
+        <button class="tombol" data-go="1">Mulai</button>
+      </div>
+    </section>
+
+    <!-- 2. Hitungan waktu: ganti tanggal di bagian script (MULAI) -->
+    <section class="slide">
+      <h2>Kita sudah bersama</h2>
+      <div class="hitung">
+        <div><b id="hd">0</b><span>hari</span></div>
+        <div><b id="hj">0</b><span>jam</span></div>
+        <div><b id="hm">0</b><span>menit</span></div>
+        <div><b id="hs">0</b><span>detik</span></div>
+      </div>
+      <p class="isi">Dan aku masih ingin menambah angka ini bersamamu.</p>
+    </section>
+
+    <!-- 3. Alasan -->
+    <section class="slide">
+      <h2>Tiga hal yang membuatku jatuh hati</h2>
+      <div class="kartu-baris">
+        <article class="kaca"><h3>Tawamu</h3><p>Membuat hari yang berat terasa ringan.</p></article>
+        <article class="kaca"><h3>Pedulimu</h3><p>Datang tanpa perlu diminta.</p></article>
+        <article class="kaca"><h3>Dirimu</h3><p>Apa adanya, dan itu sudah lebih dari cukup.</p></article>
+      </div>
+    </section>
+
+    <!-- 4. Kenangan: ganti foto1.jpg, foto2.jpg, foto3.jpg -->
+    <section class="slide">
+      <h2>Kenangan kita</h2>
+      <div class="foto-baris">
+        <figure style="--img:url('foto1.jpg'); --m:-3deg"><figcaption>Pertama kali kita…</figcaption></figure>
+        <figure style="--img:url('foto2.jpg'); --m:2deg"><figcaption>Hari yang tak terlupa</figcaption></figure>
+        <figure style="--img:url('foto3.jpg'); --m:-1.5deg"><figcaption>Selalu kuingat</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- 5. Surat: ganti isi pada data-t -->
+    <section class="slide">
+      <h2>Surat kecil</h2>
+      <div class="kaca surat">
+        <p id="isi-surat" data-t="Aku tidak pandai merangkai kata, jadi kubuatkan ini. Terima kasih sudah sabar, sudah tertawa bersamaku, dan sudah memilih untuk tinggal. Kalau hari ini kamu lelah, ingat: ada satu orang yang selalu bangga padamu."></p>
+      </div>
+    </section>
+
+    <!-- 6. Penutup -->
+    <section class="slide penutup">
+      <h2>Terima kasih sudah ada.</h2>
+      <p class="isi">Aku sayang kamu. Hari ini, besok, dan seterusnya.</p>
+      <button class="tombol" id="cinta">Kirim cinta</button>
+      <p class="tanda">ARISKA</p>
+    </section>
+
+  </main>
+
+  <nav class="kontrol kaca" aria-label="Navigasi slide">
+    <button id="prev" aria-label="Slide sebelumnya">‹</button>
+    <div class="titik" id="titik"></div>
+    <button id="next" aria-label="Slide berikutnya">›</button>
+  </nav>
+
+  <script>
+    // ====== PENGATURAN ======
+    const MULAI = new Date('2026-10-22T00:00:00'); // tanggal jadian / mulai bersama
+
+    // ====== LANGIT BINTANG: bintang membentuk hati ======
+    const cv = document.getElementById('langit'), c = cv.getContext('2d');
+    let W, H, mode = 'hati', idx = 0, mx = -999, my = -999, T = 0;
+    const kecil = () => innerWidth < 800;
+    const N = kecil() ? 170 : 280;
+    const P = [], B = [];
+    const WARNA = ['255,111,156', '255,210,127', '185,166,255'];
+
+    for (let i = 0; i < N; i++) {
+      const t = (i / N) * Math.PI * 2;
+      P.push({
+        x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+        vx: 0, vy: 0, tx: 0, ty: 0,
+        hx: 16 * Math.sin(t) ** 3,
+        hy: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)),
+        k: i % 5 < 3 ? 1 : Math.sqrt(Math.random()) * 0.88,
+        r: Math.random() * 1.5 + 0.6, ph: Math.random() * 6.28,
+        dx: (Math.random() - .5) * .35, dy: (Math.random() - .5) * .35, w: WARNA[i % 3]
+      });
+    }
+
+    function ukur() {
+      const r = devicePixelRatio || 1;
+      W = innerWidth; H = innerHeight;
+      cv.width = W * r; cv.height = H * r;
+      c.setTransform(r, 0, 0, r, 0, 0);
+      target();
+    }
+    function target() {
+      let cx, cy, s;
+      if (idx === 0) { cx = kecil() ? W / 2 : W * .73; cy = kecil() ? H * .27 : H * .46; s = kecil() ? W / 46 : Math.min(W, H) / 36; }
+      else { cx = W / 2; cy = kecil() ? H * .2 : H * .27; s = Math.min(W, H) / (kecil() ? 70 : 62); }
+      P.forEach(p => { p.tx = cx + p.hx * s * p.k; p.ty = cy + p.hy * s * p.k; });
+    }
+
+    function gambar() {
+      T++;
+      c.clearRect(0, 0, W, H);
+      const heart = mode === 'hati';
+      for (const p of P) {
+        if (heart) { p.vx += (p.tx - p.x) * .012; p.vy += (p.ty - p.y) * .012; p.vx *= .88; p.vy *= .88; }
+        else { p.vx += p.dx * .02; p.vy += p.dy * .02; p.vx *= .97; p.vy *= .97; }
+        const ddx = p.x - mx, ddy = p.y - my, d2 = ddx * ddx + ddy * ddy;
+        if (d2 < 12100) { const f = (1 - Math.sqrt(d2) / 110) * 2.2; p.vx += ddx / 110 * f; p.vy += ddy / 110 * f; }
+        p.x += p.vx; p.y += p.vy;
+        if (!heart) { if (p.x < -10) p.x = W + 10; if (p.x > W + 10) p.x = -10; if (p.y < -10) p.y = H + 10; if (p.y > H + 10) p.y = -10; }
+      }
+      if (heart) {
+        c.lineWidth = .6;
+        for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+          const a = P[i], b = P[j], dx = a.x - b.x, dy = a.y - b.y, d = dx * dx + dy * dy;
+          if (d < 1100) { c.strokeStyle = `rgba(255,157,180,${(1 - d / 1100) * .35})`; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke(); }
+        }
+      }
+      for (const p of P) {
+        const a = .45 + .45 * Math.sin(T * .035 + p.ph);
+        c.fillStyle = `rgba(${p.w},${a})`;
+        c.beginPath(); c.arc(p.x, p.y, p.r, 0, 6.283); c.fill();
+      }
+      c.textAlign = 'center';
+      for (let i = B.length - 1; i >= 0; i--) {
+        const b = B[i]; b.x += b.vx; b.y += b.vy; b.vy -= .012; b.l -= .012;
+        if (b.l <= 0) { B.splice(i, 1); continue; }
+        c.fillStyle = `rgba(${b.w},${b.l})`; c.font = b.s + 'px serif'; c.fillText('♥', b.x, b.y);
+      }
+      requestAnimationFrame(gambar);
+    }
+
+    addEventListener('pointermove', e => { mx = e.clientX; my = e.clientY; });
+    addEventListener('pointerleave', () => { mx = my = -999; });
+    addEventListener('resize', ukur);
+
+    // ====== SLIDE ======
+    const slides = [...document.querySelectorAll('.slide')], titik = document.getElementById('titik');
+    slides.forEach((_, n) => {
+      const b = document.createElement('button');
+      b.setAttribute('aria-label', 'Ke slide ' + (n + 1));
+      b.onclick = () => tampil(n); titik.appendChild(b);
+    });
+
+    document.querySelectorAll('[data-split]').forEach(h => {
+      h.innerHTML = [...h.textContent].map((ch, i) => `<span style="--i:${i}">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+    });
+
+    let tm; const surat = document.getElementById('isi-surat');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function ketik() {
+      clearInterval(tm); const t = surat.dataset.t; surat.textContent = '';
+      if (reduce) { surat.textContent = t; return; }
+      let k = 0; tm = setInterval(() => { surat.textContent = t.slice(0, ++k); if (k >= t.length) clearInterval(tm); }, 30);
+    }
+
+    function tampil(n) {
+      idx = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, k) => { s.classList.toggle('active', k === idx); s.classList.toggle('lewat', k < idx); });
+      [...titik.children].forEach((d, k) => d.classList.toggle('on', k === idx));
+      document.getElementById('prev').disabled = idx === 0;
+      document.getElementById('next').disabled = idx === slides.length - 1;
+      document.getElementById('bar').style.width = ((idx + 1) / slides.length * 100) + '%';
+      mode = (idx === 0 || idx === slides.length - 1) ? 'hati' : 'bebas';
+      target();
+      if (idx === 4) ketik(); else clearInterval(tm);
+    }
+
+    document.getElementById('prev').onclick = () => tampil(idx - 1);
+    document.getElementById('next').onclick = () => tampil(idx + 1);
+    document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => tampil(+b.dataset.go));
+    addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') tampil(idx + 1);
+      if (e.key === 'ArrowLeft') tampil(idx - 1);
+    });
+    let x0 = null;
+    addEventListener('touchstart', e => x0 = e.touches[0].clientX, { passive: true });
+    addEventListener('touchend', e => {
+      if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) tampil(idx + (dx < 0 ? 1 : -1)); x0 = null;
+    });
+
+    // Foto miring 3D mengikuti kursor
+    document.querySelectorAll('figure').forEach(f => {
+      f.addEventListener('pointermove', e => {
+        const r = f.getBoundingClientRect();
+        f.style.setProperty('--ry', ((e.clientX - r.left) / r.width - .5) * 16 + 'deg');
+        f.style.setProperty('--rx', -((e.clientY - r.top) / r.height - .5) * 16 + 'deg');
+      });
+      f.addEventListener('pointerleave', () => { f.style.setProperty('--rx', '0deg'); f.style.setProperty('--ry', '0deg'); });
+    });
+
+    // Hitungan waktu
+    function hitung() {
+      const s = Math.max(0, Math.floor((Date.now() - MULAI) / 1000));
+      hd.textContent = Math.floor(s / 86400); hj.textContent = Math.floor(s % 86400 / 3600);
+      hm.textContent = Math.floor(s % 3600 / 60); hs.textContent = s % 60;
+    }
+    setInterval(hitung, 1000); hitung();
+
+    // Kirim cinta
+    document.getElementById('cinta').onclick = e => {
+      const r = e.target.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top;
+      for (let i = 0; i < 60; i++) {
+        const a = Math.random() * Math.PI * 2, v = Math.random() * 4 + 1;
+        B.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, l: 1, s: Math.random() * 18 + 10, w: WARNA[i % 3] });
+      }
+    };
+
+    // Musik (opsional: taruh musik.mp3 di folder yang sama)
+    const lagu = document.getElementById('lagu'), musik = document.getElementById('musik');
+    musik.onclick = () => {
+      if (lagu.paused) lagu.play().then(() => musik.classList.add('on')).catch(() => {});
+      else { lagu.pause(); musik.classList.remove('on'); }
+    };
+
+    ukur(); tampil(0); gambar();
+  </script>
+</body>
+</html>
